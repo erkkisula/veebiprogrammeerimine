@@ -16,7 +16,7 @@ function signup($name, $surname, $email, $gender, $birthDate, $password){
 		"salt" => substr(sha1(rand()), 0, 22),
 		];
 	$pwdhash = password_hash($password, PASSWORD_BCRYPT, $options);
-	$stmt->bind_param("sssiss", $name, $surname, $email, $gender, $birthDate, $pwdhash);
+	$stmt->bind_param("sssiss", $name, $surname, $birthDate, $gender, $email, $pwdhash);
 	if($stmt->execute()){
 		$notice = "Ok!";
 	}else{
