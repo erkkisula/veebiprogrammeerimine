@@ -5,15 +5,79 @@ require ("../../../config.php");
 //echo $GLOBALS["serverPassword"];
 $database = "if18_erkki_su_1";
 
+//alustan sessiooni
+session_start();
+
 //pidi upload resize
 function resizeImage($image, $ow, $oh, $w, $h){
 	$newImage = imagecreatetruecolor($w, $h);
 	imagecopyresampled($newImage, $image, 0, 0, 0, 0,$w, $h, $ow, $oh);
 	return $newImage;
 }
+//pildi info
+/* function addPhotoData($fileName, $alt, $privacy){
+	$mysqli = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUsername"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
+	$stmt = $mysqli->prepare("INSERT INTO vpphotos (userid, filename, alttext, privacy) VALUES (?, ?, ?, ?,)");
+	echo $mysqli->error;
+	$stmt->bind_param("issi", $_SESSION["userId"], $fileName, $alt, $privacy);
+	if($stmt->execute()){
+		echo "Andmebaasiga on OK!";
+	}else{
+		echo "Andmebaasiga on jama!" .$stmt->error;
+	}
+	$stmt->close();
+	$mysqli->close();
+} */
 
-//alustan sessiooni
-session_start();
+function userpicload(){
+	$mysqli = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUsername"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
+	$stmt = $mysqli->prepare("SELECT picname FROM vpprofilepic WHERE user_id=?");
+	echo $mysqli->error;
+	$stmt->bind_param("i", $_SESSION["userId"]);
+	$stmt->bind_result($mypic);
+	if($stmt->execute()){
+		while($stmt->fetch()){
+			$profilePic = [$mypic];
+		}
+	}
+	$stmt->close();
+	$mysqli->close();
+	return $profilePic;
+}
+
+ /**
+  * @param $picname
+  */
+ function addProfilePic($picname){
+	$mysqli = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUsername"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
+	$stmt = $mysqli->prepare("INSERT INTO vpprofilepic (user_id, picname) VALUES (?, ?)");
+	echo $mysqli->error;
+	$stmt->bind_param("is", $_SESSION["userId"], $picname);
+	if($stmt->execute()){
+		echo "Andmebaasiga on korras!";
+	  } else {
+		echo "Andmebaasiga on jama: " .$stmt->error;
+	  }
+	$stmt->close();
+	$mysqli->close();
+}
+
+
+function addPhotoData($fileName, $alt, $privacy){
+	$mysqli = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUsername"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
+    $stmt = $mysqli->prepare("INSERT INTO vpphotos (userid, filename, alttext, privacy) VALUES (?, ?, ?, ?)");
+	echo $mysqli->error;
+	$stmt->bind_param("issi", $_SESSION["userId"], $fileName, $alt, $privacy);
+	if($stmt->execute()){
+	  echo "Andmebaasiga on korras!";
+	} else {
+      echo "Andmebaasiga on jama: " .$stmt->error;
+	}
+	
+	$stmt->close();
+	$mysqli->close();
+  }
+
 function userpageload($userID){
 	$styles = "";
 	$mysqli = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUsername"], $GLOBALS["serverPassword"], $GLOBALS["database"]);

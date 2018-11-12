@@ -1,5 +1,9 @@
 <?php
     require("functions.php");
+    //lisame klassi
+    require("Classes/Photoupload.class.php");
+
+
     //kui pole sisse loginud
 
     if(!isset($_SESSION["userId"])){
@@ -13,6 +17,8 @@
         header("Location: index_new.php");
         exit();
     }
+
+    
 
   //pildi upload
     $target_dir = "../picuploads/";
@@ -29,7 +35,9 @@
             //timestamp
             $timestamp = microtime(1) * 10000;
             //$target_file = $target_dir .basename($_FILES["fileToUpload"]["name"]) ."_" .$timestamp ."." .$imageFileType;
-            $target_file = $target_dir ."vp_" .$timestamp ."." .$imageFileType;
+            $target_file_name = "vp_" .$timestamp ."." .$imageFileType;
+            $target_file = $target_dir .$target_file_name;
+
 
 
             // Check if image file is a actual image or fake image
@@ -65,54 +73,19 @@
                 echo "Fail ei laetud üles";
                 // if everything is ok, try to upload file
                 } else {
-                    //sõltuvalt failitüübist loome pildiobjekti
-                    if($imageFileType == "jpg" or $imageFileType == "jpeg"){
-                        $myTempImage = imagecreatefromjpeg($_FILES["fileToUpload"]["tmp_name"]);
-                    }
-                    if($imageFileType == "png"){
-                        $myTempImage = imagecreatefrompng($_FILES["fileToUpload"]["tmp_name"]);
-                    }
-                    if($imageFileType == "gif"){
-                        $myTempImage = imagecreatefromgif($_FILES["fileToUpload"]["tmp_name"]);
-                    }
 
-                    //vaatame pildi og suuruse
-                    $imageWidth = imagesx($myTempImage);
-                    $imageHeight = imagesy($myTempImage);
-                    //leian vajaliku suurendusfaktori
-                    if($imageWidth > $imageHeight){
-                        $sizeRatio = $imageWidth / 600;
-                    }else{
-                        $sizeRatio = $imageHeight / 400;
+                    $myPhoto = new Photoupload($_FILES["fileToUpload"]["tmp_name"], $imageFileType);
+                    $myPhoto->resizeImage(600,400);
+                    $myPhoto->addWaterMark();
+                    $myPhoto->addText();
+
+                    $saveResult = $myPhoto->savePhoto($target_file);
+
+                    if($saveResult = 1){
+                        addPhotoData($target_file_name, $_POST["alttekst"], $_POST["privacy"]);
                     }
 
-                    $newWidth = round($imageWidth / $sizeRatio);
-                    $newHeight = round($imageHeight / $sizeRatio);
-                    $myImage = resizeImage($myTempImage, $imageWidth, $imageHeight, $newWidth, $newHeight);
-                    //muudetud suurusega pilt kirjutatakse pildifailiks
-                    if($imageFileType == "jpg" or $imageFileType == "jpeg"){
-                        if(imagejpeg($myImage, $target_file, 90)){
-                            echo "Korras!";
-                        }else{
-                            echo "Pahasti!";
-                        }
-
-                        if(imagepng($myImage, $target_file, 6)){
-                            echo "Korras!";
-                        }else{
-                            echo "Pahasti!";
-                        }
-                        
-                        if(imagegif($myImage, $target_file)){
-                            echo "Korras!";
-                        }else{
-                            echo "Pahasti!";
-                        }
-
-                        imagedestroy($myTempImage);
-                        imagedestroy($myImage);
-                    }
-
+                    unset($myPhoto);
                    /*  if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
                         echo "Fail ". basename( $_FILES["fileToUpload"]["name"]). " on üleslaetud.";
                     } else {
@@ -121,9 +94,6 @@
             }
         }
     }
-
-
-
 
 
     //lehe style
@@ -145,6 +115,15 @@
       <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" enctype="multipart/form-data">
         <label>Valige üleslaetav pilt:</label>
         <input type="file" name="fileToUpload" id="fileToUpload">
+        <br>
+        <label>Alt tekst: </label><input type="text" name="alttekst" placeholder="Sisestage tekst...">
+        <br>
+        <label>Privaatsus</label>
+        <br>
+        <input type="radio" name="privacy" value="1"><label>Avalik</label>&nbsp;
+        <input type="radio" name="privacy" value="2"><label>Sisselogitud kasutajatele</label>&nbsp;
+        <input type="radio" name="privacy" value="3" checked><label>Isiklik</label>&nbsp;
+        <br>
         <input type="submit" value="Lae pilt üles" name="submitPic">
       </form>
 	

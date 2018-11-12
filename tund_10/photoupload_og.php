@@ -65,59 +65,11 @@
                 echo "Fail ei laetud üles";
                 // if everything is ok, try to upload file
                 } else {
-                    //sõltuvalt failitüübist loome pildiobjekti
-                    if($imageFileType == "jpg" or $imageFileType == "jpeg"){
-                        $myTempImage = imagecreatefromjpeg($_FILES["fileToUpload"]["tmp_name"]);
-                    }
-                    if($imageFileType == "png"){
-                        $myTempImage = imagecreatefrompng($_FILES["fileToUpload"]["tmp_name"]);
-                    }
-                    if($imageFileType == "gif"){
-                        $myTempImage = imagecreatefromgif($_FILES["fileToUpload"]["tmp_name"]);
-                    }
-
-                    //vaatame pildi og suuruse
-                    $imageWidth = imagesx($myTempImage);
-                    $imageHeight = imagesy($myTempImage);
-                    //leian vajaliku suurendusfaktori
-                    if($imageWidth > $imageHeight){
-                        $sizeRatio = $imageWidth / 600;
-                    }else{
-                        $sizeRatio = $imageHeight / 400;
-                    }
-
-                    $newWidth = round($imageWidth / $sizeRatio);
-                    $newHeight = round($imageHeight / $sizeRatio);
-                    $myImage = resizeImage($myTempImage, $imageWidth, $imageHeight, $newWidth, $newHeight);
-                    //muudetud suurusega pilt kirjutatakse pildifailiks
-                    if($imageFileType == "jpg" or $imageFileType == "jpeg"){
-                        if(imagejpeg($myImage, $target_file, 90)){
-                            echo "Korras!";
-                        }else{
-                            echo "Pahasti!";
-                        }
-
-                        if(imagepng($myImage, $target_file, 6)){
-                            echo "Korras!";
-                        }else{
-                            echo "Pahasti!";
-                        }
-                        
-                        if(imagegif($myImage, $target_file)){
-                            echo "Korras!";
-                        }else{
-                            echo "Pahasti!";
-                        }
-
-                        imagedestroy($myTempImage);
-                        imagedestroy($myImage);
-                    }
-
-                   /*  if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
+                    if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
                         echo "Fail ". basename( $_FILES["fileToUpload"]["name"]). " on üleslaetud.";
                     } else {
                         echo "Faili üleslaadimisel tekkis viga.";
-                } */
+                }
             }
         }
     }
